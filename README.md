@@ -133,7 +133,7 @@ Beyond basic metrics, you can leverage the full power of the LGTM stack with the
 
 > [!TIP]
 > Update the `fastapi-service` service name to your application name.
-> **Dynamic Time Ranges**: Instead of hardcoding `[5m]`, use Grafana global variables:
+> - **Dynamic Time Ranges**: Instead of hardcoding `[5m]`, use Grafana global variables:
 > - **`[$__range]`**: Adjusts to the exact time period selected in the dashboard picker (e.g., Last 1 hour). Use this for total counts (with `increase()`) or "Stat" panels.
 > - **`[$__rate_interval]`**: Automatically calculates the best interval for `rate()` based on the graph's time range and resolution. Use this for Time series graphs.
 
