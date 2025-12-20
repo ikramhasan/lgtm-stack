@@ -1,0 +1,50 @@
+multitenancy_enabled: false
+
+common:
+  storage:
+    backend: s3
+    s3:
+      endpoint: ${S3_ENDPOINT}
+      insecure: ${S3_INSECURE}
+      region: ${AWS_REGION}
+      access_key_id: ${AWS_ACCESS_KEY_ID}
+      secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+      bucket_name: ${S3_MIMIR_BUCKET_NAME}
+
+blocks_storage:
+  storage_prefix: blocks
+  tsdb:
+    dir: /data/mimir/tsdb
+
+compactor:
+  data_dir: /data/mimir/compactor
+
+distributor:
+  ring:
+    instance_id: mimir
+    kvstore:
+      store: inmemory
+
+ingester:
+  ring:
+    replication_factor: 1
+    instance_id: mimir
+    kvstore:
+      store: inmemory
+
+ingester_client:
+  grpc_client_config:
+    max_recv_msg_size: 104857600
+    max_send_msg_size: 104857600
+
+ruler:
+  rule_path: /data/mimir/rules
+  alertmanager_url: http://localhost:8080/alertmanager
+  ring:
+    kvstore:
+      store: inmemory
+
+store_gateway:
+  sharding_ring:
+    kvstore:
+      store: inmemory
