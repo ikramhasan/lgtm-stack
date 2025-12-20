@@ -97,21 +97,13 @@ Use the following table to set up your primary observability dashboard. These me
 Loki allows you to query logs using **LogQL**. The stack is configured to automatically label logs with metadata like `service_name` and `deployment_environment`.
 
 #### Key Queries
-- **Application Logs** (Visualization: **Logs**)
-  - Query: `{service_name="fastapi-service"}`
-  - Description: Live stream of all logs from the FastAPI app.
-- **Error Log Stream** (Visualization: **Logs**)
-  - Query: `{service_name="fastapi-service"} |= "error"`
-  - Description: Filtered stream showing only lines containing "error" (case-insensitive).
-- **Log Volume** (Visualization: **Time series**)
-  - Query: `count_over_time({service_name="fastapi-service"}[$__interval])`
-  - Description: Bar chart showing the number of log lines produced per interval.
-- **Severity Distribution** (Visualization: **Pie chart**)
-  - Query: `sum by (level) (count_over_time({service_name="fastapi-service"}[$__range]))`
-  - Description: Breakdown of log levels (INFO, ERROR, WARN) for the selected time range.
-- **Error Frequency** (Visualization: **Time series**)
-  - Query: `count_over_time({service_name="fastapi-service"} |= "error" [$__interval])`
-  - Description: Specifically tracks the rate of error-level logs.
+| Panel Name | Visualization | Query (LogQL) | Description |
+| :--- | :--- | :--- | :--- |
+| **Application Logs** | Logs | `{service_name="fastapi-service"}` | Live stream of all logs from the FastAPI app. |
+| **Error Log Stream** | Logs | `{service_name="fastapi-service"} \|= "error"` | Filtered stream showing only lines containing "error" (case-insensitive). |
+| **Log Volume** | Time series | `count_over_time({service_name="fastapi-service"}[$__interval])` | Bar chart showing the number of log lines produced per interval. |
+| **Severity Distribution** | Pie chart | `sum by (level) (count_over_time({service_name="fastapi-service"}[$__range]))` | Breakdown of log levels (INFO, ERROR, WARN) for the selected time range. |
+| **Error Frequency** | Time series | `count_over_time({service_name="fastapi-service"} \|= "error" [$__interval])` | Specifically tracks the rate of error-level logs. |
 
 #### How to Add a Log Panel
 1. Click **+ Add** -> **Visualization**.
@@ -129,32 +121,18 @@ When viewing logs in the **Explore** tab or a **Logs** panel:
 
 Beyond basic metrics, you can leverage the full power of the LGTM stack with these advanced patterns:
 
-#### 1. The RED Method (Rate, Errors, Duration)
-Industry standard for request-driven services:
-- **Rate**: `sum(rate(http_requests_total[$__rate_interval]))`
-- **Errors**: `sum(rate(http_errors_total[$__rate_interval]))`
-- **Duration**: `histogram_quantile(0.9, sum(rate(http_request_duration_seconds_bucket[$__rate_interval])) by (le))`
-
-#### 2. Latency Heatmap (Visualization: Heatmap)
-Shows the *distribution* of latency. Large "blobs" at higher buckets indicate sporadic performance issues.
-- **Query**: `sum(rate(http_request_duration_seconds_bucket[$__rate_interval])) by (le)`
-- **Format**: Time series
-- **Heatmap setting**: In the visualization settings, ensure "Calculate from buckets" is enabled.
-
-#### 3. Log Severity Distribution (select Loki datasource)
-Monitor the health of your application logs by severity.
-- **Query**: `sum by (level) (count_over_time({service_name="fastapi-service"} [$__range]))`
-- **Visualization**: Time series (Stacked) or Bar gauge.
-
-#### 4. Apdex Score (Performance Index)
-A single score (0 to 1) representing user satisfaction (e.g., target = 0.5s).
-- **Query**: `(sum(rate(http_request_duration_seconds_bucket{le="0.5"}[$__range])) + sum(rate(http_request_duration_seconds_bucket{le="1.0"}[$__range])) / 2) / sum(rate(http_request_duration_seconds_count[$__range]))`
-
-#### 5. Resource Attribute Grouping
-Compare performance across different deployments or host types.
-- **Query**: `sum(rate(http_requests_total[$__rate_interval])) by (service_version, deployment_environment)`
+| Pattern / Metric | Visualization | Query | Description |
+| :--- | :--- | :--- | :--- |
+| **RED: Rate** | Time series | `sum(rate(http_requests_total[$__rate_interval]))` | Request rate per second. |
+| **RED: Errors** | Time series | `sum(rate(http_errors_total[$__rate_interval]))` | Error rate per second. |
+| **RED: Duration** | Time series | `histogram_quantile(0.9, sum(rate(http_request_duration_seconds_bucket[$__rate_interval])) by (le))` | 90th percentile response time. |
+| **Latency Heatmap** | Heatmap | `sum(rate(http_request_duration_seconds_bucket[$__rate_interval])) by (le)` | Visual distribution of latency buckets. |
+| **Log Severity** | Time series / Bar gauge | `sum by (level) (count_over_time({service_name="fastapi-service"} [$__range]))` | Monitor log health by severity over time. |
+| **Apdex Score** | Stat | `(sum(rate(http_request_duration_seconds_bucket{le="0.5"}[$__range])) + sum(rate(http_request_duration_seconds_bucket{le="1.0"}[$__range])) / 2) / sum(rate(http_request_duration_seconds_count[$__range]))` | Single score (0-1) for user satisfaction. |
+| **Resource Grouping** | Time series | `sum(rate(http_requests_total[$__rate_interval])) by (service_version, deployment_environment)` | Compare performance across versions/environments. |
 
 > [!TIP]
+> Update the `fastapi-service` service name to your application name.
 > **Dynamic Time Ranges**: Instead of hardcoding `[5m]`, use Grafana global variables:
 > - **`[$__range]`**: Adjusts to the exact time period selected in the dashboard picker (e.g., Last 1 hour). Use this for total counts (with `increase()`) or "Stat" panels.
 > - **`[$__rate_interval]`**: Automatically calculates the best interval for `rate()` based on the graph's time range and resolution. Use this for Time series graphs.
