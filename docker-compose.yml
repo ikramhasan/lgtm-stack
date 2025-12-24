@@ -53,6 +53,12 @@ services:
     image: otel/opentelemetry-collector-contrib:0.111.0
     container_name: otel-collector
     command: ["--config=/etc/otel-collector-config.yaml"]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "2"
+        
     volumes:
       - ./config/otel-collector/otel-config.yaml:/etc/otel-collector-config.yaml
     ports:
