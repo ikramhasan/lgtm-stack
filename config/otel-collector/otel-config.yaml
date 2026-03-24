@@ -19,11 +19,6 @@ exporters:
     tls:
       insecure: true
 
-  prometheusremotewrite:
-    endpoint: http://mimir:8080/api/v1/push
-    resource_to_telemetry_conversion:
-      enabled: true
-
   loki:
     endpoint: http://loki:3100/loki/api/v1/push
 
@@ -36,10 +31,6 @@ service:
       receivers: [otlp]
       processors: [batch, resourcedetection]
       exporters: [otlp/tempo, debug]
-    metrics:
-      receivers: [otlp]
-      processors: [batch, resourcedetection]
-      exporters: [prometheusremotewrite, debug]
     logs:
       receivers: [otlp]
       processors: [batch, resourcedetection]
